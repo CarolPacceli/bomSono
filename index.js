@@ -1,11 +1,18 @@
 const express = require("express");
 const {
-  addClient,
-  getCliente,
-  apartamentos,
-  reserva,
+  getAllInfoCliente,
   addChurrasqueira,
+  clietesPCidade,
+  apartamentos,
+  hospedagem,
+  getCliente,
   createFunc,
+  addClient,
+  reserva,
+  quartos,
+  diaria,
+  hoteis,
+  conta,
 } = require("./querrys");
 const app = express();
 
@@ -185,6 +192,164 @@ app.post("/reservaChurrasqueira", async function (request, response) {
     //       error: "Não foi possivel efetuar reserva",
     //     });
     //   }
+  } catch (error) {
+    console.log(error);
+    response.status(500).send(error);
+  }
+});
+
+app.post("/registrarDiaria", async function (request, response) {
+  try {
+    const { nomeFunc, data, consumoFrig, numAp, nome } = request.body;
+    const [result] = await diaria(nomeFunc, data, consumoFrig, numAp, nome);
+    //   if (result[0]) {
+    response.send({ success: true, message: "Reserva Efetuada" });
+    //   } else {
+    //     response.status(400).send({
+    //       success: false,
+    //       error: "Não foi possivel efetuar reserva",
+    //     });
+    //   }
+  } catch (error) {
+    console.log(error);
+    response.status(500).send(error);
+  }
+});
+
+app.post("/conta", async function (request, response) {
+  try {
+    const { nome } = request.body;
+    const [result] = await conta(nome);
+    if (result) {
+      console.log(result[0]);
+      let totalD = 0;
+      for (const x in result) {
+        totalD += parseFloat(result[x].consumoFrig);
+        console.log(result[x].consumoFrig);
+      }
+      response.send({ success: true, total: totalD });
+    } else {
+      response.status(400).send({
+        success: false,
+        error: "Não foi encotrar nenhuma diaria associada a essa pessoa",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    response.status(500).send(error);
+  }
+});
+
+app.post("/checkOut", async function (request, response) {
+  try {
+    const { nome } = request.body;
+    console.log("Nome: ", nome);
+    const user = await getAllInfoCliente(nome);
+    const [dia] = await conta(nome);
+    const [hos] = await hospedagem(nome);
+    if (dia || hos) {
+      let totalD = 0;
+      for (const x in dia) {
+        totalD += parseFloat(dia[x].consumoFrig);
+        console.log("Consumo Dia: ", dia[x].consumoFrig);
+      }
+      let totalH = 0;
+      for (const y in hos) {
+        totalD += parseFloat(hos[y].ConsumoRes);
+        console.log("Consumo Hos: ", hos[y].ConsumoRes);
+      }
+      result = totalD + totalH;
+      response.status(200).send({ reserva: user[0], total: result });
+    } else {
+      response.status(400).send({
+        success: false,
+        error: "Não possivel realizar o check-out",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    response.status(500).send(error);
+  }
+});
+
+app.post("/getUserFromR", async function (request, response) {
+  try {
+    const { cidade, dataEnt, dataSai } = request.body;
+    const [user] = await clietesPCidade(cidade, dataEnt, dataSai);
+    if (user) {
+      console.log(user);
+      response.status(200).send({ users: user });
+    } else {
+      response.status(400).send({
+        success: false,
+        error: `Não possivel encontrar usuários neste intervalo ${dataEnt} a ${dataSai} na cidade ${cidade}`,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    response.status(500).send(error);
+  }
+});
+
+app.post("/getCamareira", async function (request, response) {
+  try {
+    const { numAp, dataEnt, dataSai } = request.body;
+    const [user] = await clietesPCidade(cidade, dataEnt, dataSai);
+    if (user) {
+      console.log(user);
+      response.status(200).send({ camareiras: user });
+    } else {
+      response.status(400).send({
+        success: false,
+        error: `Não possivel encontrar usuários neste intervalo ${dataEnt} a ${dataSai} na cidade ${cidade}`,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    response.status(500).send(error);
+  }
+});
+
+app.post("/getQuartos", async function (request, response) {
+  try {
+    const { cidade } = request.body;
+    const [result] = await quartos(cidade);
+    if (result) {
+      console.log(result);
+      response.status(200).send({ hoteis: result.length });
+    } else {
+      response.status(400).send({
+        success: false,
+        error: `Não possivel encontrar hoteis do tipo '1 cama de casal' na cidade ${cidade}`,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    response.status(500).send(error);
+  }
+});
+
+app.get("/getAllQuartos", async function (request, response) {
+  try {
+    const [cidades] = await hoteis();
+    let result = [];
+    let info = [{}];
+    for (i in cidades) {
+      const [quartosT] = await quartos(cidades[i].cidade);
+      if (quartosT) {
+        result.concat(quartosT);
+        info.push({ cidade: cidades[i].cidade, numeroQuartos: quartosT.length });
+      }
+    }
+    if (info) {
+      console.log(info);
+      response.status(200).send(info);
+    } else {
+      response.status(400).send({
+        success: false,
+        error: `Não possivel encontrar hoteis do tipo '1 cama de casal' na cidade ${cidade}`,
+      });
+    }
   } catch (error) {
     console.log(error);
     response.status(500).send(error);
