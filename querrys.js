@@ -16,7 +16,7 @@ const addClient = async (nome, endereco, nacionalidade, telefone, senha, email, 
 const addChurrasqueira = async (capacidadePes,cod, data, horarioI, horarioF, acessibilidadeChurras, temTv, temFreezer, valor) => {
     const connection = await getConnection()
     return connection.execute(
-      "INSERT INTO Churrasqueiras (capacidadePes,cod, data, horarioI, horarioF, acessibilidadeChurras, temTv, temFreezer, valor) values (?,?,?,?,?,?,?,?,?)",
+      "INSERT INTO Churrasqueira (capacidadePes,cod, data, horarioI, horarioF, acessibilidadeChurras, temTv, temFreezer, valor) values (?,?,?,?,?,?,?,?,?)",
       [capacidadePes,cod, data, horarioI, horarioF, acessibilidadeChurras, temTv, temFreezer, valor]
     )
   }
@@ -37,10 +37,19 @@ const createApto = async (nomeFunc,numAp, acessibilidade, temTv, temFrigobar, di
     )
 }
 
+const createFunc = async (nomeFunc,cpfFunc, funcao, enderecoFunc, telefoneFunc, cidade) => {
+    const connection = await getConnection()
+    
+    return connection.execute(
+      "INSERT INTO Funcionarios (nomeFunc,cpfFunc, funcao, enderecoFunc, telefoneFunc, cidade) values (?,?,?,?,?,?)",
+      [nomeFunc,cpfFunc, funcao, enderecoFunc, telefoneFunc, cidade]
+    )
+}
+
  const getCliente = async client => {
     const connection = await getConnection()
     return connection.execute(
-      "select * from Cliente where nome=? and senha=?",
+      "SELECT * FROM Cliente WHERE nome=? AND senha=?",
       [client.nome, client.senha]
     )
   }
@@ -48,8 +57,16 @@ const createApto = async (nomeFunc,numAp, acessibilidade, temTv, temFrigobar, di
   const reserva = async (DataReserva, dataEnt, dataSai, numPes, nome, numAp, codReserva) => {
     const connection = await getConnection()
     return connection.execute(
-      "INSERT INTO Reserva (capacidadePes,cod, data, horarioI, horarioF, acessibilidadeChurras, temTv, temFreezer, valor) values (?,?,?,?,?,?,?,?,?)",
-      [capacidadePes,cod, data, horarioI, horarioF, acessibilidadeChurras, temTv, temFreezer, valor]
+      "INSERT INTO Reserva (DataReserva, dataEnt, dataSai, numPes, nome, numAp, codReserva) values (?,?,?,?,?,?,?)",
+      [DataReserva, dataEnt, dataSai, numPes, nome, numAp, codReserva]
+    )
+  }
+
+  const apartamentos = async (cidade) => {
+    const connection = await getConnection()
+    return connection.execute(
+      "select * from Apartamento where cidade=?",
+      [cidade]
     )
   }
 
@@ -58,5 +75,7 @@ module.exports = {
     getCliente,
     createApto,
     addChurrasqueira, 
-    reserva
+    reserva,
+    apartamentos,
+    createFunc
 }
