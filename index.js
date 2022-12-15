@@ -13,6 +13,7 @@ const {
   diaria,
   hoteis,
   conta,
+  camareira,
 } = require("./querrys");
 const app = express();
 
@@ -293,15 +294,15 @@ app.post("/getUserFromR", async function (request, response) {
 
 app.post("/getCamareira", async function (request, response) {
   try {
-    const { numAp, dataEnt, dataSai } = request.body;
-    const [user] = await clietesPCidade(cidade, dataEnt, dataSai);
-    if (user) {
-      console.log(user);
-      response.status(200).send({ camareiras: user });
+    const { numAp, dataI, dataF } = request.body;
+    const [result] = await camareira(numAp, dataI, dataF);
+    if (result) {
+      console.log(result);
+      response.status(200).send({ camareiras: result });
     } else {
       response.status(400).send({
         success: false,
-        error: `Não possivel encontrar usuários neste intervalo ${dataEnt} a ${dataSai} na cidade ${cidade}`,
+        error: `Não possivel encontrar camareiras neste intervalo ${dataEnt} a ${dataSai} na cidade ${cidade}`,
       });
     }
   } catch (error) {

@@ -144,10 +144,11 @@ const hospedagem = async (nome) => {
   return connection.execute("select * from Hospedagem where nome=?", [nome]);
 };
 
-const camareira = async (numAp, data) => {
+const camareira = async (numAp, dataI, dataF) => {
     const connection = await getConnection();
-    return connection.execute("select nomeFunc from Diarias where numAp=? and data=?", [numAp, data]);
-  };
+    return connection.execute("select nomeFunc from Diarias where data>=? and data<=? and numAp=? ", [dataI, dataF, numAp]);
+  };                                                               // '2014-02-01' >= date(inicio)
+                                                                   //  AND  '2014-02-01' <= date(fim)
 
 const clietesPCidade = async (cidade, dataEnt, dataSai) => {
     const connection = await getConnection();
